@@ -21,7 +21,7 @@ def main():
         print(f"{c} = {course} [{(c - 1) // 3}][{(c - 1) % 3}]")
         hist = [data.loc[data['Hogwarts House'] == house, course] for house in houses]
         ax = axs[(c - 1) // 3][(c - 1) % 3]
-        ax.hist(hist, density=True, bins=40)
+        ax.hist(hist, density=True, bins=20)
         ax.set_title(course)
         ax.set_xticks([])
         ax.set_yticks([])
@@ -33,3 +33,5 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         main()
+    else:
+        print("Add `dataset_train.csv` in argument for example")

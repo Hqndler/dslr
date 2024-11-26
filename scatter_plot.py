@@ -44,3 +44,5 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         main()
+    else:
+        print("Add `dataset_train.csv` in argument for example")
