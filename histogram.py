@@ -8,6 +8,10 @@ def main():
         return
     data = pd.read_csv(sys.argv[1])
 
+    if data["Hogwarts House"].isnull().any():
+        print("Wrong dataset")
+        return
+
     _, axs = plt.subplots(5, 3)
 
     houses = set(data["Hogwarts House"])

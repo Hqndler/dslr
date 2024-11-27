@@ -63,6 +63,10 @@ def main():
         return
     csv = pd.read_csv(sys.argv[1])
 
+    if csv["Hogwarts House"].isnull().any():
+        print("Wrong dataset")
+        return
+
     check = False
     data = {}
     for col in csv:

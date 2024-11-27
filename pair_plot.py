@@ -14,6 +14,10 @@ def main():
     houses = set(data["Hogwarts House"])
     data = data.drop(["Index", "First Name", "Last Name", "Birthday", "Best Hand"], axis=1)
 
+    if data["Hogwarts House"].isnull().any():
+        print("Wrong dataset")
+        return
+
     fig, axs = plt.subplots(13, 13)
 
     fig.set_figwidth(10)

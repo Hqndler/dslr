@@ -11,6 +11,10 @@ def main():
     if not os.path.exists("plots"):
         os.makedirs("plots")
 
+    if data["Hogwarts House"].isnull().any():
+        print("Wrong dataset")
+        return
+
     houses = set(data["Hogwarts House"])
     data = data.drop(["Index", "First Name", "Last Name", "Birthday", "Best Hand"], axis=1)
 
