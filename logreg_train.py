@@ -8,7 +8,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def loss(x, y, m):
-    return sum(y * log(sigmoid(x)) + (1 - y) * log(1 - sigmoid(x))) / -m
+    return sum(y * np.log(sigmoid(x)) + (1 - y) * np.log(1 - sigmoid(x))) / -m
 
 def normalize_data(data):
     for i in data:
@@ -22,6 +22,27 @@ def normalize_data(data):
 class LogisticRegression:
     lr = 0.1
     epoch = 1000
+
+def stochastic_gradient_descent(data):
+    weight = {}
+    houses = data['Hogwarts House']
+    data = data.drop(['Hogwarts House'], axis=1)
+
+    m = len(houses)
+    _, w = data.shape
+    b = 0
+
+    for house in np.unique(houses):
+        print(house)
+        weight[house] = np.zeros(w)
+        expected = np.where(house == houses, 1, 0)
+        for _ in range(lr.epoch):
+            for i in range(len(data)):
+                prediction = sigmoid(np.dot(data.values[i], np.array(weight[house])))
+                gradient = np.dot(prediction - expected[i], data.values[i].T)
+                weight[house] -= lr.lr * gradient
+        print(prediction)
+
 
 def fit(data):
     weight = {}
@@ -59,7 +80,8 @@ def main():
     data = data.drop(["Index", "First Name", "Last Name", "Birthday", "Best Hand"], axis=1)
     data = normalize_data(data)
 
-    fit(data)
+    # fit(data)
+    stochastic_gradient_descent(data)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
