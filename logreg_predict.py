@@ -3,6 +3,7 @@ import os, sys
 from math import log
 import numpy as np
 import json
+from argparse import ArgumentParser
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -17,6 +18,8 @@ def predict(data, weight):
         file.write("Index,Hogwarts House\n")
         [file.write(f"{c},{house}\n") for c, house in enumerate(final)]
 
+    print("houses.csv created !")
+
 def normalize_data(data):
     for i in data:
         if i == 'Hogwarts House':
@@ -26,14 +29,27 @@ def normalize_data(data):
         data[i] = (data[i] - min(tmp)) / (max(tmp) - min(tmp))
     return data
 
-def main():
-    for i in sys.argv[1:]:
-        if not os.path.exists(i):
-            print(f'"{i}" no such file or directory.')
-            return
+def parse_arg():
+    parser = ArgumentParser()
+    parser.add_argument("--csv", action="store", type=str, required=True)
+    parser.add_argument("--json", action="store", type=str, required=True)
 
-    data = pd.read_csv(sys.argv[1])
-    with open(sys.argv[2], 'r') as r:
+    args = parser.parse_args()
+
+    if not os.path.exists(args.csv):
+        arg = args.csv
+    elif not os.path.isfile(args.json):
+        arg = args.json
+    else:
+        return args.csv, args.json
+    print(f'"{arg}" must be a file')
+    sys.exit(1)
+
+def main():
+    csv, jsonf = parse_arg()
+
+    data = pd.read_csv(csv)
+    with open(jsonf, 'r') as r:
         weight = json.load(r)
 
     for k, v in weight.items():
@@ -44,5 +60,4 @@ def main():
     predict(data, weight)
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        main()
+    main()

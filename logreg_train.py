@@ -3,6 +3,7 @@ import os, sys
 from math import log
 import numpy as np
 import json
+from argparse import ArgumentParser
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -23,28 +24,20 @@ class LogisticRegression:
     lr = 0.1
     epoch = 1000
 
-def stochastic_gradient_descent(data):
-    weight = {}
-    houses = data['Hogwarts House']
-    data = data.drop(['Hogwarts House'], axis=1)
+def stochastic_gradient_descent(data, weight, expected, m, i = 0):
+    while i < len(data):
+        prediction = sigmoid(np.dot(data.values[i : i + m], np.array(weight)))
+        gradient = np.dot(prediction - expected[i : i + m], data.values[i : i + m])
+        weight -= lr.lr * gradient
+        i += m
 
-    m = len(houses)
-    _, w = data.shape
-    b = 0
-
-    for house in np.unique(houses):
-        print(house)
-        weight[house] = np.zeros(w)
-        expected = np.where(house == houses, 1, 0)
-        for _ in range(lr.epoch):
-            for i in range(len(data)):
-                prediction = sigmoid(np.dot(data.values[i], np.array(weight[house])))
-                gradient = np.dot(prediction - expected[i], data.values[i].T)
-                weight[house] -= lr.lr * gradient
-        print(prediction)
+def batch(data, weight, expected, m):
+    prediction = sigmoid(np.dot(data, np.array(weight)))
+    gradient = (np.dot(prediction - expected, data)) / m
+    weight -= lr.lr * gradient
 
 
-def fit(data):
+def fit(data, method):
     weight = {}
     houses = data['Hogwarts House']
     data = data.drop(['Hogwarts House'], axis=1)
@@ -52,14 +45,19 @@ def fit(data):
     m = len(houses)
     _, w = data.shape
 
+    if method == "stochastic" or method == "mini":
+        func = stochastic_gradient_descent
+        lr.epoch = 2 if method == "stochastic" else 20
+        m = 1 if method == "stochastic" else 100
+    else:
+        func = batch
+
     for house in np.unique(houses):
-        print(house)
         weight[house] = np.zeros(w)
         expected = np.where(house == houses, 1, 0)
         for _ in range(lr.epoch):
-            prediction = sigmoid(np.dot(data, np.array(weight[house])))
-            gradient = (np.dot(prediction - expected, data)) / m
-            weight[house] -= lr.lr * gradient
+            func(data, weight[house], expected, m)
+    [print(f"{k} = {v}") for k, v in weight.items()]
     
     with open("weight.csv", 'w') as file:
         file.write(f"House,{','.join([i for i in data.keys()])}\n")
@@ -71,19 +69,30 @@ def fit(data):
             weight[i] = list(weight[i])
         json.dump(weight, file)
 
+def parse_arg():
+    parser = ArgumentParser()
+    parser.add_argument("--csv", required=True, type=str, action="store")
+    parser.add_argument("--method", required=False, type=str, 
+                        choices=["batch", "mini", "stochastic"], 
+                        default="batch", action="store")
+
+    args = parser.parse_args()
+
+    if not os.path.isfile(args.csv):
+        print(f'"{args.csv}" must be a file')
+        sys.exit(1)
+
+    return args.csv, args.method
+
 def main():
-    if not os.path.exists(sys.argv[1]):
-        print(f'"{sys.argv[1]}" no such file or directory.')
-        return
-    data = pd.read_csv(sys.argv[1])
+    csv, method = parse_arg()
+    data = pd.read_csv(csv)
 
     data = data.drop(["Index", "First Name", "Last Name", "Birthday", "Best Hand"], axis=1)
     data = normalize_data(data)
 
-    # fit(data)
-    stochastic_gradient_descent(data)
+    fit(data, method)
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        lr = LogisticRegression()
-        main()
+    lr = LogisticRegression()
+    main()
